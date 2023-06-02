@@ -66,24 +66,22 @@ def upload_image():
             # Convert centers to integer values
             centers = centers.astype(np.uint8)
 
-            # Create the color palette text
-            palette_text = "Color Palette:\n"
+            # Create a new window for the color palette
+            palette_window = tk.Toplevel(window)
+            palette_window.title("Color Palette")
+            palette_window.geometry("200x200")
+
+            # Display each color in the palette
             for color in centers:
-                palette_text += "#" + ''.join([format(c, '02x') for c in color]) + "\n"
+                color_hex = '#' + ''.join([format(c, '02x') for c in color])
 
-            # Display the color palette
-            palette_frame = tk.Frame(image_frame, padx=10, pady=10)
-            palette_frame.pack()
+                color_frame = tk.Frame(palette_window, bg=color_hex, width=50, height=50)
+                color_frame.pack(pady=5)
 
-            palette_label = tk.Label(palette_frame, text=palette_text, padx=10, pady=5)
-            palette_label.pack()
+                color_label = tk.Label(palette_window, text=color_hex)
+                color_label.pack()
 
-            for color in centers:
-                color_frame = tk.Frame(palette_frame, bg='#%02x%02x%02x' % tuple(color), width=50, height=50)
-                color_frame.pack(side="left", padx=5)
-
-            image_label.pack_forget()
-            image_label.pack()
+            # Hide the original image frame
 
         image_label = tk.Label(image_frame, image=image_tk)
         image_label.image = image_tk
