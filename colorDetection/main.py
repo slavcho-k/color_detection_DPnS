@@ -116,7 +116,7 @@ def show_main_menu(is_video):
 
 
 def live_image():
-    global video_frame
+    global video_frame, video_label
     print("live image")
 
     frame.pack_forget()
@@ -139,12 +139,40 @@ def live_image():
         if ret:
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            pil_image = Image.fromarray(frame_rgb)
+            # Perform RGB color detection
+            pixels = frame_rgb.reshape((-1, 3))
+            num_colors = 3  # Number of dominant colors to detect
+            criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+            _, labels, centers = cv2.kmeans(pixels.astype(np.float32), num_colors, None, criteria, 10,
+                                            cv2.KMEANS_RANDOM_CENTERS)
 
+            # Convert centers to integer values
+            centers = centers.astype(np.uint8)
+
+            # Find the dominant color
+            dominant_color = centers[np.argmax(np.unique(labels, return_counts=True)[1])]
+
+            # Display the dominant color on the screen
+            color_name = ""
+            if dominant_color[0] > dominant_color[1] and dominant_color[0] > dominant_color[2]:
+                color_name = "Red"
+            elif dominant_color[1] > dominant_color[0] and dominant_color[1] > dominant_color[2]:
+                color_name = "Green"
+            else:
+                color_name = "Blue"
+
+            # Draw an outline around the detected color
+            mask = cv2.inRange(frame_rgb, dominant_color, dominant_color)
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(frame_rgb, contours, -1, (0, 255, 0), 2)
+
+            pil_image = Image.fromarray(frame_rgb)
             image_tk = ImageTk.PhotoImage(pil_image)
 
             video_label.configure(image=image_tk)
             video_label.image = image_tk
+
+            print("Dominant color:", color_name)
 
         video_label.after(10, update_video)
 
