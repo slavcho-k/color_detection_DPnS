@@ -1,9 +1,9 @@
 import tkinter as tk
-from tkinter import filedialog
-
 import cv2
 import numpy as np
+
 from PIL import ImageTk, Image
+from tkinter import filedialog
 
 window = tk.Tk()
 window.title("Image Processing App")
@@ -38,11 +38,10 @@ def upload_image():
                                         bg='#%02x%02x%02x' % (pixel_color[0], pixel_color[1], pixel_color[2]))
 
         def detect_regional_color():
-            # Define the region coordinates
-            region_x1 = 100  # Top-left x-coordinate
-            region_y1 = 100  # Top-left y-coordinate
-            region_x2 = 300  # Bottom-right x-coordinate
-            region_y2 = 300  # Bottom-right y-coordinate
+            region_x1 = 100
+            region_y1 = 100
+            region_x2 = 300
+            region_y2 = 300
 
             region = img_rgb[region_y1:region_y2, region_x1:region_x2]
             average_color = tuple(map(int, region.mean(axis=(0, 1))))
@@ -51,27 +50,21 @@ def upload_image():
                                         bg='#%02x%02x%02x' % (average_color[0], average_color[1], average_color[2]))
 
         def generate_color_palette():
-            # Convert image to RGB
             img_rgb = cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB)
 
-            # Flatten the image pixels
             pixels = img_rgb.reshape((-1, 3))
 
-            # Perform K-means clustering
-            num_colors = 3  # Number of colors in the palette
+            num_colors = 3
             criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
             _, labels, centers = cv2.kmeans(pixels.astype(np.float32), num_colors, None, criteria, 10,
                                             cv2.KMEANS_RANDOM_CENTERS)
 
-            # Convert centers to integer values
             centers = centers.astype(np.uint8)
 
-            # Create a new window for the color palette
             palette_window = tk.Toplevel(window)
             palette_window.title("Color Palette")
             palette_window.geometry("200x200")
 
-            # Display each color in the palette
             for color in centers:
                 color_hex = '#' + ''.join([format(c, '02x') for c in color])
 
@@ -80,8 +73,6 @@ def upload_image():
 
                 color_label = tk.Label(palette_window, text=color_hex)
                 color_label.pack()
-
-            # Hide the original image frame
 
         image_label = tk.Label(image_frame, image=image_tk)
         image_label.image = image_tk
