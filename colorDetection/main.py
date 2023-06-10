@@ -76,7 +76,7 @@ def upload_image():
 
         image_label = tk.Label(image_frame, image=image_tk)
         image_label.image = image_tk
-        image_label.bind("<Button-1>", on_pixel_click)  # Bind left mouse click event
+        image_label.bind("<Button-1>", on_pixel_click)
         image_label.pack()
 
         selected_color_label = tk.Label(image_frame, text="Selected Color:", padx=10, pady=5)
@@ -146,13 +146,10 @@ def live_image():
             _, labels, centers = cv2.kmeans(pixels.astype(np.float32), num_colors, None, criteria, 10,
                                             cv2.KMEANS_RANDOM_CENTERS)
 
-            # Convert centers to integer values
             centers = centers.astype(np.uint8)
 
-            # Find the dominant color
             dominant_color = centers[np.argmax(np.unique(labels, return_counts=True)[1])]
 
-            # Display the dominant color on the screen
             color_name = ""
             if dominant_color[0] > dominant_color[1] and dominant_color[0] > dominant_color[2]:
                 color_name = "Red"
