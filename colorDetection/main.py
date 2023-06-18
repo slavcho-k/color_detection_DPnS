@@ -115,65 +115,54 @@ def show_main_menu(is_video):
     frame.pack()
 
 
+def get_limits(color):
+    bgr_color = np.uint8([[color]])
+    hsv_color = cv2.cvtColor(bgr_color, cv2.COLOR_BGR2HSV)
+
+    hue = hsv_color[0][0][0]
+    hue_tolerance = 10  # Tolerance for hue variation
+
+    lower_limit = np.array([hue - hue_tolerance, 100, 100], dtype=np.uint8)
+    upper_limit = np.array([hue + hue_tolerance, 255, 255], dtype=np.uint8)
+
+    return lower_limit, upper_limit
+
+
 def live_image():
-    global video_frame, video_label
-    print("live image")
-
-    frame.pack_forget()
-
-    video_frame = tk.Frame(window, padx=30, pady=30)
-
-    video_label = tk.Label(video_frame)
-    video_label.pack()
-
-    back_button = tk.Button(video_frame, text="Back", command=lambda: show_main_menu(True), padx=10, pady=5)
-    back_button.config(**button_style)
-    back_button.pack(pady=10)
-
-    video_frame.pack()
-
+    global video_frame
+    color = [0, 255, 0]
     cap = cv2.VideoCapture(0)
 
-    def update_video():
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+
+    while True:
         ret, frame = cap.read()
-        if ret:
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            # Perform RGB color detection
-            pixels = frame_rgb.reshape((-1, 3))
-            num_colors = 3  # Number of dominant colors to detect
-            criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-            _, labels, centers = cv2.kmeans(pixels.astype(np.float32), num_colors, None, criteria, 10,
-                                            cv2.KMEANS_RANDOM_CENTERS)
+        hsv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-            centers = centers.astype(np.uint8)
+        lower_limit, upper_limit = get_limits(color)
 
-            dominant_color = centers[np.argmax(np.unique(labels, return_counts=True)[1])]
+        mask = cv2.inRange(hsv_image, lower_limit, upper_limit)
 
-            color_name = ""
-            if dominant_color[0] > dominant_color[1] and dominant_color[0] > dominant_color[2]:
-                color_name = "Red"
-            elif dominant_color[1] > dominant_color[0] and dominant_color[1] > dominant_color[2]:
-                color_name = "Green"
-            else:
-                color_name = "Blue"
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
-            # Draw an outline around the detected color
-            mask = cv2.inRange(frame_rgb, dominant_color, dominant_color)
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            cv2.drawContours(frame_rgb, contours, -1, (0, 255, 0), 2)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            pil_image = Image.fromarray(frame_rgb)
-            image_tk = ImageTk.PhotoImage(pil_image)
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > 100:
+                x, y, w, h = cv2.boundingRect(contour)
+                frame = cv2.rectangle(frame, (x, y), (x + w, y + h), color, 5)
+                cv2.putText(frame, str(len(contours)), (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-            video_label.configure(image=image_tk)
-            video_label.image = image_tk
+        cv2.imshow('frame', frame)
 
-            print("Dominant color:", color_name)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-        video_label.after(10, update_video)
-
-    update_video()
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 def exit_app():
