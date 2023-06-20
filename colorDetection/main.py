@@ -6,7 +6,7 @@ from PIL import ImageTk, Image
 from tkinter import filedialog
 
 window = tk.Tk()
-window.title("Image Processing App")
+window.title("Color detection app")
 
 
 def upload_image():
@@ -175,6 +175,8 @@ def change_color(color_name):
 
 
 global color
+color = [255, 0, 0]
+
 colors = {
     'blue': [255, 0, 0],
     'green': [0, 255, 0],
@@ -184,38 +186,31 @@ colors = {
 frame = tk.Frame(window, padx=20, pady=20)
 
 label_style = {"fg": "#4CAF50", "font": ("Arial", 18, "bold")}
-label = tk.Label(frame, text="Select which color to detect in live video detection", **label_style)
-label.pack(pady=10)
-
-red_button = tk.Button(frame, text="Red", command=lambda: change_color('red'), padx=10, pady=5)
-green_button = tk.Button(frame, text="Green", command=lambda: change_color('green'), padx=10, pady=5)
-blue_button = tk.Button(frame, text="Blue", command=lambda: change_color('blue'), padx=10, pady=5)
-
 button_style = {"bg": "#4CAF50", "fg": "white", "font": ("Arial", 12, "bold")}
-red_button.config(**button_style)
-green_button.config(**button_style)
-blue_button.config(**button_style)
 
-red_button.pack(side="left", padx=10)
-green_button.pack(side="left", padx=10)
-blue_button.pack(side="left", padx=10)
+title_label = tk.Label(frame, text="Color Detection App", **label_style)
+title_label.pack(pady=10)
 
-label = tk.Label(frame, text="Color Detection App", **label_style)
-label.pack(pady=10)
-
-upload_button = tk.Button(frame, text="Upload Image", command=upload_image, padx=10, pady=5)
-live_button = tk.Button(frame, text="Live Image", command=live_image, padx=10, pady=5)
-exit_button = tk.Button(frame, text="Exit", command=exit_app, padx=10, pady=5)
-
-upload_button.config(**button_style)
-live_button.config(**button_style)
-exit_button.config(**button_style)
-
+upload_button = tk.Button(frame, text="Upload Image", command=upload_image, **button_style)
 upload_button.pack(pady=10)
+
+live_button = tk.Button(frame, text="Live Image", command=live_image, **button_style)
 live_button.pack(pady=10)
+
+exit_button = tk.Button(frame, text="Exit", command=lambda: exit_app(), **button_style)
 exit_button.pack(pady=10)
 
+color_label = tk.Label(frame, text="Choose a color to detect in live image", **label_style)
+color_label.pack(pady=10)
+
+red_button = tk.Button(frame, text="Red", command=lambda: change_color("red"), padx=10, **button_style)
+red_button.pack(pady=5)
+
+green_button = tk.Button(frame, text="Green", command=lambda: change_color("green"), padx=10, **button_style)
+green_button.pack(pady=5)
+
+blue_button = tk.Button(frame, text="Blue", command=lambda: change_color("blue"), padx=10, **button_style)
+blue_button.pack(pady=5)
+
 frame.pack()
-
 window.mainloop()
-
