@@ -115,12 +115,13 @@ def show_main_menu(is_video):
     frame.pack()
 
 
-def get_limits(color):
+def get_limits():
+    global color
     bgr_color = np.uint8([[color]])
     hsv_color = cv2.cvtColor(bgr_color, cv2.COLOR_BGR2HSV)
 
     hue = hsv_color[0][0][0]
-    hue_tolerance = 10  # Tolerance for hue variation
+    hue_tolerance = 10
 
     lower_limit = np.array([hue - hue_tolerance, 100, 100], dtype=np.uint8)
     upper_limit = np.array([hue + hue_tolerance, 255, 255], dtype=np.uint8)
@@ -130,20 +131,19 @@ def get_limits(color):
 
 def live_image():
     global video_frame
-    color = [0, 255, 0]
+    global color
     cap = cv2.VideoCapture(0)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
     while True:
+        print(color)
         ret, frame = cap.read()
 
         hsv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-        lower_limit, upper_limit = get_limits(color)
+        lower_limit, upper_limit = get_limits()
 
         mask = cv2.inRange(hsv_image, lower_limit, upper_limit)
-
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
@@ -169,12 +169,40 @@ def exit_app():
     window.destroy()
 
 
-frame = tk.Frame(window, padx=300, pady=300)
+def change_color(color_name):
+    global color
+    color = colors[color_name]
+
+
+global color
+colors = {
+    'blue': [255, 0, 0],
+    'green': [0, 255, 0],
+    'red': [60, 50, 120]
+}
+
+frame = tk.Frame(window, padx=20, pady=20)
 
 label_style = {"fg": "#4CAF50", "font": ("Arial", 18, "bold")}
-label = tk.Label(frame, text="Color Detection App", **label_style)
+label = tk.Label(frame, text="Select which color to detect in live video detection", **label_style)
+label.pack(pady=10)
+
+red_button = tk.Button(frame, text="Red", command=lambda: change_color('red'), padx=10, pady=5)
+green_button = tk.Button(frame, text="Green", command=lambda: change_color('green'), padx=10, pady=5)
+blue_button = tk.Button(frame, text="Blue", command=lambda: change_color('blue'), padx=10, pady=5)
 
 button_style = {"bg": "#4CAF50", "fg": "white", "font": ("Arial", 12, "bold")}
+red_button.config(**button_style)
+green_button.config(**button_style)
+blue_button.config(**button_style)
+
+red_button.pack(side="left", padx=10)
+green_button.pack(side="left", padx=10)
+blue_button.pack(side="left", padx=10)
+
+label = tk.Label(frame, text="Color Detection App", **label_style)
+label.pack(pady=10)
+
 upload_button = tk.Button(frame, text="Upload Image", command=upload_image, padx=10, pady=5)
 live_button = tk.Button(frame, text="Live Image", command=live_image, padx=10, pady=5)
 exit_button = tk.Button(frame, text="Exit", command=exit_app, padx=10, pady=5)
@@ -183,11 +211,11 @@ upload_button.config(**button_style)
 live_button.config(**button_style)
 exit_button.config(**button_style)
 
-label.pack(pady=10)
-upload_button.pack(side="left", padx=10)
-live_button.pack(side="left", padx=10)
-exit_button.pack(side="left", padx=10)
+upload_button.pack(pady=10)
+live_button.pack(pady=10)
+exit_button.pack(pady=10)
 
 frame.pack()
 
 window.mainloop()
+
