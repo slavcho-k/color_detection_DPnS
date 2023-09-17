@@ -128,16 +128,13 @@ def get_limits():
 
     return lower_limit, upper_limit
 
-
 def live_image():
-    global video_frame
     global color
     cap = cv2.VideoCapture(0)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
     while True:
-        print(color)
         ret, frame = cap.read()
 
         hsv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -154,7 +151,6 @@ def live_image():
             if area > 100:
                 x, y, w, h = cv2.boundingRect(contour)
                 frame = cv2.rectangle(frame, (x, y), (x + w, y + h), color, 5)
-                cv2.putText(frame, str(len(contours)), (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
         cv2.imshow('frame', frame)
 
@@ -178,7 +174,8 @@ global color
 color = [255, 0, 0]
 
 colors = {
-    'blue': [255, 0, 0],
+    #173, 216, 230
+    'blue': [140, 115, 50],
     'green': [0, 255, 0],
     'red': [60, 50, 120]
 }
